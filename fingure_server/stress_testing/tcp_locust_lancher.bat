@@ -1,0 +1,1 @@
+locust -f E:/FingreGuessingGame/fingure_server/stress_testing/tcp_locust_test.py --csv=D:/test/test --no-web -c10 -r10 -t2
