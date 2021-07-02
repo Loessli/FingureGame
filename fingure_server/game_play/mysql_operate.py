@@ -13,6 +13,7 @@ class MysqlHandle(object):
         self.connect = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db, charset=charset)
 
     def init_connect(self):
+        # 初始化链接
         try:
             self.connect = pymysql.connect(host=Config.db_host, port=Config.db_port,
                                             user=Config.db_user, db=Config.db_db,

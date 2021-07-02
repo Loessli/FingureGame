@@ -15,6 +15,7 @@ class NetService(object):
     m_login_srv = None
     m_cache = None
     m_heart_beat = None
+    m_lock = None
 
     def init(self):
         log(0, "NetService启动!")
@@ -22,6 +23,7 @@ class NetService(object):
         self.m_login_srv = LoginService()
         self.m_cache = CacheService()
         self.m_heart_beat = HeartBeatService()
+        self.m_lock = threading.Lock()
         # threading.Thread(target=self.start_handle_msg, daemon=True).start()
 
     def handle_msg(self, msg_pkt):
@@ -31,17 +33,19 @@ class NetService(object):
         '''
         receive_data = msg_pkt[1]
         log(0, "[ReceiveInfo]", receive_data)
-        if receive_data['type'] == MsgType.heart_beat:  # 心跳处理
+        if receive_data['type'] == MsgType.heart_beat:  # 心跳处理 2
             self.m_heart_beat.heart_beat_handle(msg_pkt)
         elif receive_data['type'] == MsgType.login:
-            self.m_login_srv.login_handle(msg_pkt)  # 登陆结果处理
+            self.m_login_srv.login_handle(msg_pkt)  # 登陆结果处理  0
         elif receive_data['type'] == MsgType.game_room:
-            GameRoomService().join_room_handle(msg_pkt)  # 加入房间处理
+            GameRoomService().join_room_handle(msg_pkt)  # 加入房间处理 1
 
     def update(self):
         # tick帧率大概30, 每帧只处理一条msg
         if self.m_sessions.qsize() > 0:
+            # self.m_lock.acquire()
             temp = self.m_sessions.get()
+            # self.m_lock.release()
             self.handle_msg(temp)
 
     def start_handle_msg(self):
@@ -51,6 +55,10 @@ class NetService(object):
             if self.m_sessions.qsize() > 0:
                 temp = self.m_sessions.get()
                 self.handle_msg(temp)
+
+    def player_add(self, session):
+        log(0, f"current session id is {session.get_id()}")
+        self.m_cache.add_online_user_cache(session)
 
     def player_remove(self, session):
         # 玩家离开

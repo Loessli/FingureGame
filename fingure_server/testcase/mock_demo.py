@@ -25,9 +25,10 @@ class TestProducer2(unittest.TestCase):
 
     # 1. Mock一个函数。
     # 其实有好几种方法，个人比较推荐下面这种，看上去很清晰：
-    @mock.patch('multiple')
+    @mock.patch(__name__ + '.multiple')  # 看起来如果不是类函数，需要添加对应的file name。确定域？
     def test_multiple(self, mock_multiple):
         mock_multiple.return_value = 3
+        print(multiple(4, 20), __name__)
         self.assertEqual(multiple(8, 14), 3)
 
     # 2. Mock一个对象里面的方法
@@ -52,7 +53,8 @@ class TestProducer2(unittest.TestCase):
 
     # 5. Mock多个函数，主要是注意顺序
     @mock.patch.object(Calculator, 'add')
-    @mock.patch('test_unit.multiple')
+    # @mock.patch('test_unit.multiple')
+    @mock.patch(__name__ + '.multiple')
     def test_both(self, mock_multiple, mock_add):
         mock_add.return_value = 1
         mock_multiple.return_value = 2
@@ -61,7 +63,4 @@ class TestProducer2(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    L = [1, 2, 3, 4, 5, 6, 7, 8, 9, 6, 4, 3]
-    L.sort()
-    print(L)
+    unittest.main()

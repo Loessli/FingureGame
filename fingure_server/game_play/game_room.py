@@ -1,5 +1,6 @@
 from enum import IntEnum
 from lib.log_info import log
+from service.cache_service import CacheService
 
 
 class PlayerState(IntEnum):
@@ -22,21 +23,21 @@ class PlayOrder(IntEnum):
     Paper = 2  # 布
 
 
-class _Player(object):
-    def __init__(self, msg_pkt):
-        self.play_connect = msg_pkt[0].conn
-        self.play_sesson = msg_pkt[0]
+class Player(object):
+    def __init__(self, session_id: int):
+        assert isinstance(session_id, int), 'init argument session id must be int'
+        self.session_id = session_id
         self.play_state = PlayerState.Waiting
         self.play_order = None
         self.play_result = None
 
-    def set_order(self,play_order):
+    def set_order(self, play_order):
         self.play_order = play_order
 
-    def set_result(self,play_result):
+    def set_result(self, play_result):
         self.play_result = play_result
 
-    def set_play_state(self,state):
+    def set_play_state(self, state):
         self.play_state = state
 
 
@@ -45,13 +46,14 @@ class Room(object):
     def __init__(self, room_id: int):
         self.m_players = {}
         self.m_id = room_id
+        self.m_cache = CacheService()
 
     def play_game(self, msg_pkt):
         # 进入房间逻辑'''
         log(0, f'正在房间{self.m_id} PlayGame')
         for key in self.m_players:
             player = self.m_players.get(key)
-            if msg_pkt[0].conn == player.play_connect:
+            if msg_pkt[0] == player.session_id:
                 response_data = msg_pkt[1]['data']
                 play_order = response_data.get('play_order')
                 play_state = response_data.get('play_state')
@@ -69,7 +71,8 @@ class Room(object):
         # 两个玩家的状态是否都是playing状态'''
         player1 = self.m_players.get('player1')
         player2 = self.m_players.get('player2')
-        return (player1.play_state == PlayerState.Playing) and (player2.play_state == PlayerState.Playing)
+        if player1 and player2:
+            return (player1.play_state == PlayerState.Playing) and (player2.play_state == PlayerState.Playing)
 
     def judge_result(self):
         # 判断结果，并发送消息给客户端'''
@@ -88,25 +91,25 @@ class Room(object):
         player1.play_state = PlayerState.Waiting
         player1.play_state = PlayerState.Waiting
         log(0, f"房间{self.m_id}结果为player1 :{player1.play_result} player2 :{player2.play_result}")
-        self.figure_response(player1.play_result, player1.play_sesson)
-        self.figure_response(player2.play_result, player2.play_sesson)
+        self.figure_response(player1.play_result, player1.session_id)
+        self.figure_response(player2.play_result, player2.session_id)
 
     def broadcast_response(self, _data: dict):
         # 向房间内的player广播消息'''
         for key in list(self.m_players.keys()):
             player = self.m_players.get(key)
             if player:
-                player.play_sesson.send_msg(_data)
+                self.m_cache.send_msg_by_session_id(player.session_id, _data)
 
-    def figure_response(self,result:int,session):
+    def figure_response(self, result: int, session_id):
         # 猜拳结果反送给客户端
         send_data = {
             'type': 1,
-            'data': {'play_result':result,"is_over":True}
+            'data': {'play_result': result, "is_over": True}
         }
-        session.send_msg(send_data)
+        self.m_cache.send_msg_by_session_id(session_id, send_data)
 
-    def join_room_response(self, session, game_ready: bool):
+    def join_room_response(self, session_id: int, game_ready: bool):
         # 加入房间后返回信息
         send_data = {
             "type": 1,
@@ -116,11 +119,11 @@ class Room(object):
                 'game_over': False
             }
         }
-        session.send_msg(send_data)
+        self.m_cache.send_msg_by_session_id(session_id, send_data)
 
     def join_room(self, msg_pkt):
         # 玩家加入房间
-        new_player = _Player(msg_pkt)
+        new_player = Player(msg_pkt[0])
         self.add_player(new_player)
         if self.get_players() == 1:
             send_data = {
@@ -131,7 +134,7 @@ class Room(object):
                     'game_over': False
                 }
             }
-            msg_pkt[0].send_msg(send_data)
+            self.m_cache.send_msg_by_session_id(new_player.session_id, send_data)
         elif self.get_players() == 2:
             send_data = {
                 "type": 1,
@@ -156,11 +159,11 @@ class Room(object):
         # 当前房间玩家数量
         return len(self.m_players)
 
-    def leaving_room(self,session):
+    def leaving_room(self, session_id):
         # 玩家离开房间
         for key in list(self.m_players.keys()):
             player = self.m_players.get(key)
-            if player.play_connect == session.conn:
+            if player.session_id == session_id:
                 # player_离开房间
                 log(0, f'{key}离开房间')
                 self.m_players.pop(key)

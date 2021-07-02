@@ -13,11 +13,16 @@ class MysqlDBService(object):
 
     def init_mysql(self):
         # 当数据库整个都是空的的时候，想通过这个函数来初始化创建数据库的所有表格
+        # database name is figuregame
+        # id  password  username  win  lose
+        #
         ...
 
     def get_userdata(self, username: str):
         # 通过username获取数据库中user的信息
         username = self.get_real_key(username)
+        # select 多个key
+        # select username,password from account where xxx;
         msg = self.m_mysql_conn.query(f"select * from account where username={username} ;")
         if len(msg) == 0:
             return
@@ -46,6 +51,11 @@ class MysqlDBService(object):
         temp_insert_sql = "insert into account (username,password,win,lose) values({username},{password},0,0)".\
             format(username=username, password=password)
         self.m_mysql_conn.mutation(temp_insert_sql)
+
+    def delete_userdata(self, userdata: dict):
+        "DELETE FROM table_name [WHERE Clause]"
+        # DELETE FROM runoob_tbl WHERE runoob_id=3
+        ...
 
     def get_real_key(self, key: str):
         # sql语句里面的key也需要引号， 所以包一层

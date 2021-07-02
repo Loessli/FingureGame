@@ -2,7 +2,7 @@ from enum import IntEnum
 
 
 class Config(object):
-    server_ip = "192.168.120.16"
+    server_ip = "10.1.55.77"
     server_port = 12456
     tick_frame = 0.032    # 30帧
     max_players = 12  # 同时在线player数量
@@ -25,12 +25,12 @@ class MsgType(IntEnum):
 protocol_msg = {
     "type": 1,  # 功能名称
     "data": {
-        "username": "",
-        "password": "",
-        "room_id": "",
-        "play_state": 0,
-        "play_order": 0,
-        "play_result": 0,
+        "username": "",  # 玩家name
+        "password": "",  # 玩家密码
+        "room_id": "",  # 猜拳房间的id
+        "play_state": 0,  # 玩家状态
+        "play_order": 0,  # 玩家猜拳指令
+        "play_result": 0,  # 猜拳结果
         "leave_room": False,
         'c_time': 1,
         's_time': 2

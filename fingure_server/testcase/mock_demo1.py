@@ -6,6 +6,7 @@ def zhifu():
     '''
     pass
 
+
 def zhifu_statues():
     '''根据支付的结果success or fail，判断跳转到对应页面'''
     result = zhifu()
@@ -21,10 +22,9 @@ def zhifu_statues():
     except:
         return "Error, 服务端返回异常!"
 
-from unittest import mock
-
 
 if __name__ == '__main__':
+    from unittest import mock
     zhifu = mock.Mock(return_value={"result": "success", "reason": "null"})
     # 根据支付结果测试页面跳转
     statues = zhifu_statues()

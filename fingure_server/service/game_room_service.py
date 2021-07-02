@@ -19,8 +19,9 @@ class GameRoomService(object):
         self.m_temp_id = 1
         self.m_cache = CacheService()
 
-    def join_room_handle(self,msg_pkt):
+    def join_room_handle(self, msg_pkt):
         # 加入房间处理
+        session_id = msg_pkt[0]
         receive_data = msg_pkt[1]['data']
         room_id = receive_data['room_id']
         # 未分配房间
@@ -41,16 +42,16 @@ class GameRoomService(object):
         # 已分配房间
         else:
             room = self.m_rooms.get(str(room_id))
-            self.m_cache.add_online_user_cache(msg_pkt[0], {'room_id':msg_pkt[1]['data']['room_id']})
+            self.m_cache.add_online_user_cache_by_id(session_id, {'room_id': msg_pkt[1]['data']['room_id']})
             room.play_game(msg_pkt)
             if msg_pkt[1]['data'].get('leave_room'):
-                self.leaving_room(msg_pkt[0], room_id)
+                self.leaving_room(session_id, room_id)
 
-    def leaving_room(self, session, room_id):
+    def leaving_room(self, session_id, room_id):
         # 玩家离开房间'''
         log(0, f"玩家离开当前房间{room_id}")
         room = self.m_rooms.get(str(room_id))
-        room.leaving_room(session)
+        room.leaving_room(session_id)
         if room.get_players() == 0:
             self.close_room(room_id)
 
@@ -65,8 +66,8 @@ class GameRoomService(object):
         log(0, f"创建新的房间{self.m_temp_id}")
         new_room = Room(self.m_temp_id)
         new_room.join_room(msg_pkt)
-        self.m_cache.add_online_user_cache(msg_pkt[0],{'room_id':msg_pkt[1]['data']['room_id']})
-        self.m_rooms.update({str(self.m_temp_id):new_room})
+        self.m_cache.add_online_user_cache_by_id(msg_pkt[0], {'room_id': msg_pkt[1]['data']['room_id']})
+        self.m_rooms.update({str(self.m_temp_id): new_room})
         if self.m_temp_id < 210000:
             self.m_temp_id += 1
         else:
