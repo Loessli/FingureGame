@@ -1,4 +1,7 @@
-/fingure_server/.idea
-/webserver/.idea
-/.git
+# pycharm 缓存文件
+.idea/
+# 对应环境的缓存文件
+venv/
+
+.git/
 *.pyc
