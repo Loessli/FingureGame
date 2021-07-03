@@ -17,6 +17,9 @@ class LoginService(object):
         login_data = msg_pkt[1].get('data')
         username = login_data.get("username")
         log(0, f"{username}登陆请求{login_data}")
+        if self.m_cache.is_player_online(session_id):
+            self.login_response(False, session_id, error_msg="is already login")
+            return
         password = login_data.get("password")
         cache_user_data = self.m_cache.get_user_cache(username)
         if not cache_user_data:

@@ -3,5 +3,7 @@
 # 对应环境的缓存文件
 venv/
 
+
+test_report/
 .git/
 *.pyc

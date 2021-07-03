@@ -51,7 +51,7 @@ class TcpSocketClient(socket.socket):
         return recv_data
 
 
-class TcpSocketLocust(Locust):
+class TcpSocketLocust(Locust):  # User --> Locust
     """
     This is the abstract Locust class which should be subclassed. It provides an TCP socket client
     that can be used to make TCP socket requests that will be tracked in Locust's statistics.
@@ -80,7 +80,7 @@ def decode(msg: bytes):
         print('??????????')
 
 
-class UserBehavior(TaskSet):
+class UserBehavior(TaskSet): # User --> TaskSet
     @task
     def login(self):
         msg = {
@@ -119,12 +119,48 @@ class UserBehavior(TaskSet):
 
 
 class TcpTestUser(TcpSocketLocust):
-    host = "10.1.55.77"  # 连接的TCP服务的IP
+    host = "192.168.1.3"  # 连接的TCP服务的IP
     port = 12456  # 连接的TCP服务的端口
     min_wait = 100
     max_wait = 1000
     # must be task_set
     task_set = UserBehavior
+    # class task_set(User):   # User --> TaskSet
+    #     @task
+    #     def login(self):
+    #         msg = {
+    #             "type": 0,
+    #             "data": {
+    #                 "username": "lealli" + str(random.randint(1, 100)),
+    #                 "password": "z1314123"
+    #             }
+    #         }
+    #         self.client.send_msg(encode(msg))  # 发送的数据
+    #         data = self.client.recv(2048)
+    #         print(decode(data))
+    #         msg = {
+    #             "type": 2,
+    #             "data": {
+    #                 "c_time": 123456,
+    #                 "s_time": 23456
+    #             }
+    #         }
+    #         self.client.send_msg(encode(msg))  # 发送的数据
+    #         data = self.client.recv(2048)
+    #         print(decode(data))
+    #
+    #     # @task(2)  #这里会有一个权重的问题，权重越高，发送包里面，这个信息的占比就越高
+    #     # def heart_beat(self):
+    #     #     msg = {
+    #     #         "type": 2,
+    #     #         "data": {
+    #     #             "c_time": 123456,
+    #     #             "s_time": 23456
+    #     #         }
+    #     #     }
+    #     #     self.client.send_msg(encode(msg))  # 发送的数据
+    #     #     data = self.client.recv(2048)
+    #     #     print(decode(data))
 
 
 if __name__ == "__main__":

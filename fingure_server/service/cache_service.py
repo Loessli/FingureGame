@@ -72,6 +72,10 @@ class CacheService(object):
             self.remove_user_cache(self.online_user_data_cache[session_id].get("username"))
             self.online_user_data_cache.pop(session_id)
 
+    def is_player_online(self, session_id):
+        if self.online_user_data_cache[session_id]:
+            return True
+
     def get_session_by_username(self, username: str):
         # 通过username获取online的session，如果不存在，则返回None
         for session_id in list(self.online_user_data_cache.keys()):
