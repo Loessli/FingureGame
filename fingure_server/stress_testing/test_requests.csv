@@ -1,4 +1,0 @@
-"Method","Name","# requests","# failures","Median response time","Average response time","Min response time","Max response time","Average Content Size","Requests/s"
-"tcpsocket","connect",2000,0,0,0,0,16,0,448.39
-"tcpsocket","send",2091,0,0,0,0,0,0,468.79
-"None","Aggregated",4091,0,0,0,0,16,0,917.17
