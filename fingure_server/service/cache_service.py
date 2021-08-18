@@ -1,4 +1,5 @@
 from lib.log_info import log
+# from lib.network import AsyncSession
 from service.db_service import MysqlDBService
 from lib.decorator_mode import *
 import time
@@ -72,10 +73,6 @@ class CacheService(object):
             self.remove_user_cache(self.online_user_data_cache[session_id].get("username"))
             self.online_user_data_cache.pop(session_id)
 
-    def is_player_online(self, session_id):
-        if self.online_user_data_cache[session_id]:
-            return True
-
     def get_session_by_username(self, username: str):
         # 通过username获取online的session，如果不存在，则返回None
         for session_id in list(self.online_user_data_cache.keys()):
@@ -127,10 +124,10 @@ class CacheService(object):
 
     def update(self):
         # tick每隔3min自动存一次数据'''
-        self.end_time = time.time()
-        if self.end_time - self.temp_time > 180:
+        current_time = time.time()
+        if current_time - self.temp_time > 180:
             log(0, "3min已到,存储一次数据")
             for key in list(self.user_data_cache.keys()):
                 userdata = self.user_data_cache.get(key)
                 self.m_db_svc.update_userdata(userdata)
-            self.temp_time = self.end_time
+            self.temp_time = current_time

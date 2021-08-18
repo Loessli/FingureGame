@@ -1,2 +1,4 @@
-PyMySQL
-locust
+PyMySQL == 1.0.2
+locust == 1.6.0
+gevent == 21.1.2
+# locust-plugins

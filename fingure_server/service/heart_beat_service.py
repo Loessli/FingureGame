@@ -3,6 +3,12 @@ from lib.decorator_mode import *
 from service.cache_service import CacheService
 from enum import IntEnum
 import time
+from typing import (Dict)
+import gevent
+
+
+# var
+HEART_DELTA = 5
 
 
 class PlayerState(IntEnum):
@@ -10,13 +16,57 @@ class PlayerState(IntEnum):
     DISCONNECT = 2  # 离线
 
 
+class HeartBeat(object):
+    def __init__(self, session_id, client_data: dict):
+        self.m_cache = CacheService()
+        self.m_client_data = client_data
+        self.last_c_time = 1
+        self.current_c_time: int = 1
+        self.m_session = self.m_cache.get_session_by_session_id(session_id)
+        self.green_let = gevent.spawn(self.start)
+
+    def __del__(self):
+        if self.green_let:
+            self.green_let.kill()
+
+    def start(self):
+        while True:
+            self.heart_beat_handle()
+            gevent.sleep(HEART_DELTA)
+
+    def heart_beat_handle(self):
+        # TODO 拓展
+        if not self.m_client_data:
+            self.m_client_data = {
+                'c_time': int(time.time()),
+            }
+        log(0, 'start send heartbeat')
+        msg = {
+            'type': 2,
+            'data': {
+                's_time': int(time.time()),
+                'c_time': self.m_client_data.get('c_time')
+            }
+        }
+        self.m_session.send_msg(msg)
+
+    def update_client_data(self, client_data: dict):
+        self.m_client_data = client_data
+
+    def stop_heart_beat(self):
+        self.m_session.close()
+        if self.green_let:
+            self.green_let.kill()
+
+
 @singleton
 class HeartBeatService(object):
     m_cache = None
     m_running = True
     heartbeat_delta = 5  # 5s一次发送心跳
-    m_heartbeat_cache = {}
+    m_heartbeat_cache: Dict[int, HeartBeat]  = {}
     temp_time = 0
+    m_manager = None
 
     '''
     data = {
@@ -28,53 +78,22 @@ class HeartBeatService(object):
     def init(self):
         # 初始化
         log(0, "HeartBeatService启动！")
-        self.temp_time = self.get_current_time()
         self.m_cache = CacheService()
 
     def heart_beat_handle(self, msg_pkt):
         # 心跳网络包接收处理逻辑
         player_session_id = msg_pkt[0]
         player_data = msg_pkt[1]
-        c_time = player_data.get('data').get('c_time')
-        s_time = player_data.get('data').get('s_time')
-        time_cache = {
-            'c_time': c_time,
-            's_time': self.get_current_time()
-        }
-        self.m_heartbeat_cache[player_session_id] = time_cache
-
-    def stop_heart_beat(self):
-        # 停止服务器心跳逻辑
-        self.m_running = False
-
-    def check_player_states(self):
-        ...
-
-    def _update_handle(self):
-        for session_id in list(self.m_heartbeat_cache.keys()):
-            if session_id:
-                send_data = {
-                    'type': 2,
-                    'data': {
-                        'c_time': self.m_heartbeat_cache[session_id]['c_time'],
-                        's_time': self.get_current_time()
-                    }
-                }
-                self.m_cache.get_session_by_session_id(session_id).send_msg(send_data)
+        # 新进的player
+        if player_session_id not in self.m_heartbeat_cache:
+            self.m_heartbeat_cache[player_session_id] = HeartBeat(player_session_id, player_data)
+        else:
+            self.m_heartbeat_cache[player_session_id].update_client_data(player_data)
 
     def player_remove(self, session_id):
         # 玩家离开
-        if self.m_heartbeat_cache[session_id]:
+        if self.m_heartbeat_cache.get(session_id):
+            self.m_heartbeat_cache[session_id].stop_heart_beat()
             self.m_heartbeat_cache.pop(session_id)
 
-    def get_current_time(self):
-        # 获取当前的时间戳
-        return int(time.time())
 
-    def update(self):
-        # tick
-        if self.m_running:
-            current_time = self.get_current_time()
-            if current_time - self.temp_time >= self.heartbeat_delta:
-                self._update_handle()
-                self.temp_time = current_time

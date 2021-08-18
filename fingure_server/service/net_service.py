@@ -6,7 +6,7 @@ from service.login_service import LoginService
 from service.game_room_service import GameRoomService
 from service.cache_service import CacheService
 from service.heart_beat_service import HeartBeatService
-import threading
+import gevent
 
 
 @singleton
@@ -23,8 +23,7 @@ class NetService(object):
         self.m_login_srv = LoginService()
         self.m_cache = CacheService()
         self.m_heart_beat = HeartBeatService()
-        self.m_lock = threading.Lock()
-        # threading.Thread(target=self.start_handle_msg, daemon=True).start()
+        gevent.spawn(self.start_handle_msg)
 
     def handle_msg(self, msg_pkt):
         '''
@@ -40,21 +39,12 @@ class NetService(object):
         elif receive_data['type'] == MsgType.game_room:
             GameRoomService().join_room_handle(msg_pkt)  # 加入房间处理 1
 
-    def update(self):
-        # tick帧率大概30, 每帧只处理一条msg
-        if self.m_sessions.qsize() > 0:
-            # self.m_lock.acquire()
-            temp = self.m_sessions.get()
-            # self.m_lock.release()
-            self.handle_msg(temp)
-
     def start_handle_msg(self):
-        # 提升效率可以开个线程写个死循环来出来, 这样tps就提上来了
-        # 但是要关闭update
         while True:
             if self.m_sessions.qsize() > 0:
                 temp = self.m_sessions.get()
                 self.handle_msg(temp)
+            gevent.sleep(0)
 
     def player_add(self, session):
         log(0, f"current session id is {session.get_id()}")
@@ -69,9 +59,3 @@ class NetService(object):
             room_id = cache_data.get('room_id')
             if room_id:
                 GameRoomService().leaving_room(session, room_id)
-
-
-
-
-
-

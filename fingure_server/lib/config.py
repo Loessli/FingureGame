@@ -2,7 +2,7 @@ from enum import IntEnum
 
 
 class Config(object):
-    server_ip = "192.168.1.3"
+    server_ip = "10.1.55.77"
     server_port = 12456
     tick_frame = 0.032    # 30帧
     max_players = 12  # 同时在线player数量
@@ -38,9 +38,10 @@ protocol_msg = {
 }
 
 if __name__ == '__main__':
-    import socket
-    # 获取计算机名称
-    hostname = socket.gethostname()
-    # 获取本机IP
-    ip = socket.gethostbyname(hostname)
-    print(ip)
+    import time
+    start_time = time.time()
+    times = 0
+    while time.time() - start_time < 1:
+        times += 1
+
+    print(times, 'time times')

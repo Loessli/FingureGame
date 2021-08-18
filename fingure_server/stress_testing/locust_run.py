@@ -12,11 +12,18 @@ class StressConfig(object):
     out_report_path = os.path.dirname(__file__) + "\\test_report\\" + str(time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                            time.localtime(time.time())))
     # 指定并发用户数
-    total_users = 20
+    total_users = 2
     # 每秒启动用户数
-    per_second_user = 20
+    per_second_user = 1
     # 指定运行时间 单位s
-    running_time = 300
+    running_time = 100
+
+    # 是否启动web模式
+    is_web = True
+    # web ip
+    web_ip = "127.0.0.1"
+    # web port
+    web_port = 8089
 
     @staticmethod
     def path_init():
@@ -25,22 +32,26 @@ class StressConfig(object):
             os.mkdir(report_path)
 
 
-if __name__ == '__main__':
-    # D:/test/test
-    '''
-    使用命令：locust -f E:/PyProject/locust-test/tcp_locust_test.py --csv=test --no-web -c10 -r10 -t2，
-    如以下图显示为请求发送成功，并生成了以test开头的测试报告
-    命令解释：
-    --no-web 
-    无web界面模式运行测试，需要-c和-r配合使用
-    -c
-    指定并发用户数，no-web模式下可用
-    -r  
-    指定每秒启动的用户数，no-web模式下可用
-    -t
-    指定运行的时间，no-web模式下可用，0.8.1版本不再提供t参数来指定运行时间，用-n来指定运行次数
-    '''
+def env_initialize():
     StressConfig.path_init()
-    stress_cmd = f"locust -f {StressConfig.py_file_path} --csv={StressConfig.out_report_path} --no-web " \
-        f"-c{StressConfig.total_users} -r{StressConfig.per_second_user} -t{StressConfig.running_time}"
+
+
+def run_without_web():
+    # csv --> csv path
+    # --headless --> run without web
+    # -u --> total user number
+    # -r --> instance user per seconds
+    # -t --> locust running time
+    cmd = f"locust -f {StressConfig.py_file_path} --csv={StressConfig.out_report_path} --headless " \
+        f"-u {StressConfig.total_users} -r {StressConfig.per_second_user} -t {StressConfig.running_time}"
+    return cmd
+
+
+def run_with_web():
+    return f"locust -f {StressConfig.py_file_path} --web-host {StressConfig.web_ip} --web-port {StressConfig.web_port}"
+
+
+if __name__ == '__main__':
+    env_initialize()
+    stress_cmd = run_with_web() if StressConfig.is_web else run_without_web()
     os.system(stress_cmd)
