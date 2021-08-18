@@ -179,11 +179,17 @@ class AsyncServer(object):
                     try:
                         session = self.m_session_dict.get(r)
                         session.start_receive()
-                    except Exception as e:
-                        # socket 断开链接
+                    except WindowsError as e:
+                        log_info.log(0, '客户端自动退出？', e)
+                        self.m_session_dict.get(r).close()
                         self.m_session_dict.pop(r)
                         self.inputs.remove(r)
-                        log_info.log(0, 'catch exception, socket断开链接', e)
+                    except Exception as e:
+                        # socket 断开链接
+                        self.m_session_dict.get(r).close()
+                        self.m_session_dict.pop(r)
+                        self.inputs.remove(r)
+                        log_info.log(2, '接收数据出了点问题', e)
 
             for send_msg in writeable:
                 log_info.log(1, 'select writeable', send_msg)
