@@ -5,7 +5,7 @@ import queue
 
 class ClientTcp(object):
     def __init__(self):
-        self._address = ("10.1.55.77", 12456)
+        self._address = ("10.1.55.77", 12457)
         self.m_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.m_client.connect(self._address)
         self.m_head_len = 4
@@ -54,6 +54,22 @@ class User(object):
     def tick(self):
         ...
 
+def loop():
+    import socket
+
+    HOST = '10.1.55.77'
+    PORT = 12457
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((HOST, PORT))
+    # print(s.recv(1024))
+    while True:
+        msg = bytes(input(">>:").strip(), encoding="utf-8")
+        if msg == 'q'.encode("utf-8"):
+            exit("退出！")
+        s.send(msg)
+        # data = s.recv(1024)
+        # print('Received', data.decode())
+    # s.close()
 
 if __name__ == '__main__':
     import time
@@ -74,3 +90,8 @@ if __name__ == '__main__':
     client.send(login_msg)
     # client.receive()
     time.sleep(2)
+    client.send(login_msg)
+    client.stop()
+    # while True:
+    #     ...
+

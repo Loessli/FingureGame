@@ -1,5 +1,6 @@
 import time
-import socket, struct, json
+from gevent import socket
+import struct, json
 from locust import User, events, task, TaskSet
 import gevent
 from locust.user.task import (
@@ -79,7 +80,7 @@ class Behavior(TaskSet):
         ...
 
 
-USER_ID_LIST = [i for i in range(500)]
+USER_ID_LIST = list(range(500))
 
 
 class TcpTestUser(User):

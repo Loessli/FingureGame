@@ -26,7 +26,7 @@ public class NetComponent : MonoBehaviour
             Instance = this;
         }
         m_sessin_queque = new Queue<MessagePacket>();
-        new Network().StartClient("10.1.55.77", 12456);
+        new Network().StartClient("10.1.55.77", 12457);
 
 
         login_manager.gameObject.SetActive(true);

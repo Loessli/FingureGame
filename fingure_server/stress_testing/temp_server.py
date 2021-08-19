@@ -1,8 +1,3 @@
-import time, json, struct
-# from socket import socket, AF_INET, SOCK_STREAM
-import threading
-# import socket
-import gevent
 
 
 buffsize = 2048
@@ -60,24 +55,24 @@ buffsize = 2048
 
 
 def select_server():
+    import gevent
     from gevent import select
     from gevent import socket
-    import sys
-    import queue
-    import os
 
     m_session_dict = {}
     m_id = 1
 
     class Session(object):
 
-        def __init__(self, connect: socket.socket):
+        def __init__(self, connect):
             self.m_client = connect
+            gevent.spawn(self.receive)
 
-        def receive(self, buff_size: int = 1024):
-            data = self.m_client.recv(buff_size)
-            print(data)
-            return data
+        def receive(self):
+            while True:
+                data = self.m_client.recv(0)
+                print(data)
+                gevent.sleep(0.01)
 
     def id_change():
         return m_id + 1
@@ -88,7 +83,7 @@ def select_server():
 
 
     # Bind the socket to the port
-    server_address = ('10.1.55.77', 12456)
+    server_address = ('10.1.55.77', 12457)
     server.bind(server_address)
 
     # Listen for incoming connections
@@ -107,15 +102,20 @@ def select_server():
                 if r is server:  # 代表来了一个新连接
                     conn, addr = server.accept()
 
-                    # m_session_dict[conn] = Session(conn)
+                    #
                     # id_change()
                     gevent.sleep(0.1)
                     print("来了一个新连接", conn, addr)
+                    m_session_dict[conn] = Session(conn)
                     inputs.append(conn)  # 是因为这个新建立的连接还没发数据过来，现在就接收的话程序就报错，
                     # 所以要想实现这个客户端发数据来时server端能知道就需要让select再检测这个conn
                 else:
                     try:
-                        print(r.recv(1024))
+                        m_session_dict[r].receive()
+                        # try:
+                        #     print(r.recv(1024, 0x41))
+                        # except BlockingIOError as e:
+                        #     print('????????', e)
                         # data = r.recv(1024)
                         # print("收到的数据：", data.decode())
                         # r.send(data)
@@ -129,96 +129,71 @@ def select_server():
             #
             # for e in exceptional:
             #     print('eeeeeeeeeeeeeeeeeeeee', e)
-    #         gevent.sleep(0)
-    #
+            gevent.sleep(0)
     from gevent import monkey
-    monkey.patch_all()
-    # gevent.spawn(start).join()
-    start()
+    monkey.patch_all(select=False, socket=False)
+    gevent.spawn(start).join()
 
 
-class AsyncSessions(object):
-    def __init__(self, connect, session_id: int):
-        self.m_client = connect
-        self.m_id = session_id
+def async_io_server():
+    import socket
+    import asyncio
+    import struct
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(("10.1.55.77", 12457))
+    server.setblocking(False)
+    server.listen(10)
+    main_loop = asyncio.get_event_loop()
 
-    def start_receive(self):
-        print(self.m_client.recv(1024))
-        # head_info = self.m_client.recv(HEAD_LEN)
-        # if head_info != b"":
-        #     body_info = self.m_client.recv(struct.unpack(">i", head_info)[0])
-        #     self.on_receive(body_info)
-        #     self.start_receive()
+    class Session(object):
+        def __init__(self, conn: socket.socket):
+            self.m_client = conn
+            self.m_running = True
+            main_loop.create_task(self.start_receive())
+            self.m_id = 1
 
-    def on_connect(self):
-        # self.m_net.player_add(self)
-        ...
+        async def start_receive(self):
+            try:
+                if self.m_running:
+                    head_info = await main_loop.sock_recv(self.m_client, 4)
+                    if len(head_info) > 0:
+                        print(1111, head_info, self.m_id)
+                        body_info = await main_loop.sock_recv(self.m_client, struct.unpack(">i", head_info)[0])
+                        self.on_receive(body_info)
+                        self.m_id += 1
+                        await self.start_receive()
+                    else:
+                        # 退出的时候发送个b""
+                        print('正常退出')
+                        self.close()
+            except Exception as e:
+                print(e, '??????????')
+                self.close()
 
-    def on_disconnect(self):
-        # self.m_net.player_remove(self)
-        ...
+        def on_receive(self, body_info: bytes):
+            print(body_info, '????????', self.m_running)
 
-    def on_receive(self, info: bytes):
-        # 接收数据
-        json_data = json.loads(info.decode('utf-8'))
-        msg_packet = (self.m_id, json_data)
-        # self.m_net.m_sessions.put(msg_packet)
+        def on_connect(self):
+            print('new user add', self.m_running, )
 
-    def close(self):
-        self.m_client.close()
-        self.on_disconnect()
+        def on_disconnect(self):
+            print('user leave', self.m_running)
 
-    def send_msg(self, send_data: dict):
-        # 向客户端发送数据
-        temp_data = json.dumps(send_data).encode('utf-8')
-        # 心跳包发送的时候可能会crash，就是OSError: [WinError 10038] 在一个非套接字上尝试了一个操作。
-        # 查了下，可能是close以后，再send？
-        self.m_client.send(struct.pack(">i", len(temp_data)) + temp_data)
+        def close(self):
+            self.m_running = False
+            self.on_disconnect()
+            self.m_client.close()
 
-    def get_id(self):
-        return self.m_id
+    async def start():
+        while True:
+            conn, addr = await main_loop.sock_accept(server)
+            session = Session(conn)
+            session.on_connect()
+
+    asyncio.get_event_loop().create_task(start())
+    asyncio.get_event_loop().run_forever()
 
 
 if __name__ == "__main__":
-    import gevent
-    from gevent import socket
-    from gevent.server import StreamServer
-
-
-
-
-
-    socket_dict = {}
-    import random
-
-    def tick():
-        while True:
-            print(socket_dict)
-            gevent.sleep(1)
-
-
-    def handle(socket, address):
-        print(socket, address)
-        try:
-            session = socket_dict.get(socket)
-            if not session:
-                session = AsyncSessions(socket, random.randint(0, 1000))
-                socket_dict[socket] = session
-                session.start_receive()
-
-            else:
-                socket_dict[socket].start_receive()
-        except Exception as e:
-            print(e)
-            session.close()
-
-    gevent.spawn(tick)
-
-    from gevent import monkey
-    monkey.patch_all()
-    server = StreamServer(('10.1.55.77', 12456), handle, 100)
-
-    server.serve_forever()
-
-    print(333)
+    async_io_server()
 

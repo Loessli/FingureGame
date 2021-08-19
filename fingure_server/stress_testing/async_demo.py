@@ -1,48 +1,5 @@
-import gevent, os
-from gevent.pool import Group
-from gevent import monkey
 import asyncio
 import time
-
-
-monkey.patch_all()
-
-
-# demo for gevent and asyncio
-
-def main_loop():
-    while True:
-        print('main_loop')
-        gevent.sleep(0.2)
-
-
-def temp_test_loop():
-    # while True:
-    print('temp_test_loop')
-    gevent.sleep(0.1)
-        # gevent.sleep(0.3)
-
-
-def gevent_test():
-    green_let = Group()
-    green_let_1 = Group()
-    green_let.spawn(main_loop)
-    # green_let.join()
-
-    green_let_1.spawn(temp_test_loop)
-    # must join
-    # green_let_1.join()
-    gevent.spawn(temp_test_loop).run()
-
-
-async def async_main_loop():
-    print('Hello ...')
-    await asyncio.sleep(1)
-    print('... World!')
-
-
-def asyncio_test():
-    asyncio.run(async_main_loop())
 
 
 def temp_socket_client():
@@ -62,5 +19,35 @@ def temp_socket_client():
     # s.close()
 
 
+def get_get_get():
+    class Temp():
+        flag = True
+    temp = Temp()
+
+    async def async_main_loop():
+        while temp.flag:
+            print('Hello ...')
+            # print(asyncio.Task.all_tasks())
+            await asyncio.sleep(1)
+            # print('... World!')
+
+    async def tick_for_heart():
+        start_time = time.time()
+        while True:
+            print('heart beat', time.time())
+            if time.time() - start_time > 2:
+                print(asyncio.get_running_loop().is_closed())
+                temp.flag = False
+            await asyncio.sleep(2)
+
+    asyncio.get_event_loop().create_task(tick_for_heart())
+
+    def asyncio_test():
+        asyncio.get_event_loop().create_task(async_main_loop())
+        asyncio.get_event_loop().run_forever()
+
+    asyncio_test()
+
+
 if __name__ == '__main__':
-    temp_socket_client()
+    get_get_get()

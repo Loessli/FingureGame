@@ -17,10 +17,10 @@ if __name__ == '__main__':
     import socket
 
     HOST = '10.1.55.77'
-    PORT = 12456
+    PORT = 12457
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
-    print(s.recv(1024))
+    # print(s.recv(1024))
     while True:
         msg = bytes(input(">>:").strip(), encoding="utf-8")
         if msg == 'q'.encode("utf-8"):
