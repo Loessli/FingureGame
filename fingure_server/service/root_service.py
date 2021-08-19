@@ -1,5 +1,5 @@
 from lib.decorator_mode import *
-from lib.network import Server, AsyncServer
+from lib.network import AsyncServer
 from lib.config import Config
 from .net_service import NetService
 from .login_service import LoginService
@@ -22,6 +22,7 @@ class ServerRoot(object):
     def init(self):
         # 各种service初始化
         monkey.patch_all()
+
         NetService().init()
         LoginService().init()
         GameRoomService().init()
@@ -29,17 +30,14 @@ class ServerRoot(object):
         MysqlDBService().init()
         HeartBeatService().init()
         self.m_cache = CacheService()
-        self.m_server = AsyncServer()  # Server()
         self.m_net_service = NetService()
         self.m_db = MysqlDBService()
-        self.m_heart_beat = HeartBeatService()
+        gevent.spawn(self.updata)
+        self.m_server = AsyncServer()  # Server()
         self.m_server.start_server(addr=(Config.server_ip, Config.server_port))
-        gevent.spawn(self.updata).join()
 
     def updata(self):
         while True:
-            # self.m_net_service.update()
-            # print('tick')
             self.m_cache.update()
             # self.m_heart_beat.update()
             gevent.sleep(Config.tick_frame)

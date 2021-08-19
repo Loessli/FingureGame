@@ -48,18 +48,19 @@ def asyncio_test():
 def temp_socket_client():
     import socket
 
-    HOST = 'localhost'
-    PORT = 10000
+    HOST = '10.1.55.77'
+    PORT = 12456
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
     while True:
         msg = bytes(input(">>:").strip(), encoding="utf-8")
         if msg == 'q'.encode("utf-8"):
             exit("退出！")
-        s.sendall(msg)
-        data = s.recv(1024)
-        print('Received', data.decode())
+        s.send(msg)
+        # data = s.recv(1024)
+        # print('Received', data.decode())
+    # s.close()
 
 
 if __name__ == '__main__':
-    pass
+    temp_socket_client()

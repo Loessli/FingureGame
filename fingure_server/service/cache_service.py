@@ -79,7 +79,7 @@ class CacheService(object):
             if self.online_user_data_cache.get(session_id).get('data').get('username') == username:
                 return self.online_user_data_cache.get(session_id).get("session")
 
-    def get_session_by_session_id(self, session_id: str):
+    def get_session_by_session_id(self, session_id):
         # 通过session id获取session
         return self.online_user_data_cache.get(session_id).get('session')
 

@@ -52,6 +52,7 @@ class NetService(object):
 
     def player_remove(self, session):
         # 玩家离开
+        log(0, f'player {session.id} remove, 退出游戏')
         self.m_heart_beat.player_remove(session)
         cache_data = self.m_cache.get_online_user_cache(session)
         if cache_data:
