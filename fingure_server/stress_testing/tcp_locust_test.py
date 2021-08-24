@@ -44,10 +44,10 @@ class TcpSocketClient(object):
                                         response_length=0)
 
     def receive_msg(self, buffsize):
-        recv_data = b''
+        receive_data = b''
         start_time = time.time()
         try:
-            self.m_socket.recv(buffsize)
+            receive_data = self.m_socket.recv(buffsize)
         except Exception as e:
             total_time = int((time.time() - start_time) * 1000)
             events.request_failure.fire(request_type="tcp", name="recv", response_time=total_time,
@@ -56,7 +56,7 @@ class TcpSocketClient(object):
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="tcp", name="recv", response_time=total_time,
                                         response_length=0)
-        return recv_data
+        return receive_data
 
 
 # 序列化

@@ -49,5 +49,15 @@ def get_get_get():
     asyncio_test()
 
 
+def processing1():
+    while True:
+        print('111111', time.time())
+
+
+def processing2():
+    while True:
+        print('222222', time.time())
+
+
 if __name__ == '__main__':
-    get_get_get()
+    asyncio.get_event_loop().create_connection()

@@ -13,10 +13,10 @@ def udp_client():
     ...
 
 
-if __name__ == '__main__':
+def temp_client():
     import socket
 
-    HOST = '10.1.55.77'
+    HOST = '127.0.0.1'
     PORT = 12457
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
@@ -29,3 +29,9 @@ if __name__ == '__main__':
         # data = s.recv(1024)
         # print('Received', data.decode())
     # s.close()
+
+
+if __name__ == '__main__':
+    import asyncio
+    async def client():
+        reader, writer = await asyncio.open_connection(host="127.0.0.1", port=12457)
