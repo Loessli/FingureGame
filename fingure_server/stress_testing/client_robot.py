@@ -54,6 +54,7 @@ class User(object):
     def tick(self):
         ...
 
+
 def loop():
     import socket
 
@@ -71,6 +72,7 @@ def loop():
         # print('Received', data.decode())
     # s.close()
 
+
 if __name__ == '__main__':
     import time
     login_msg={
@@ -85,12 +87,12 @@ if __name__ == '__main__':
         }
     }
 
-
     client = ClientTcp()
     client.send(login_msg)
     # client.receive()
     time.sleep(2)
     client.send(login_msg)
+    time.sleep(2)
     client.stop()
     # while True:
     #     ...

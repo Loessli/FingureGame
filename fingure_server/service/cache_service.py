@@ -1,5 +1,5 @@
 from lib.log_info import log
-# from lib.network import AsyncSession
+from lib.network import AsyncSession
 from service.db_service import MysqlDBService
 from lib.decorator_mode import *
 import time
@@ -60,7 +60,7 @@ class CacheService(object):
         if self.online_user_data_cache.get(session_id):
             self.online_user_data_cache.get(session_id).update({'data': data})
 
-    def get_online_user_cache(self, session):
+    def get_online_user_cache(self, session) -> dict:
         # 获取线上玩家的缓存数据
         session_id = session.get_id()
         if session_id in self.online_user_data_cache.keys():
@@ -73,13 +73,13 @@ class CacheService(object):
             self.remove_user_cache(self.online_user_data_cache[session_id].get("username"))
             self.online_user_data_cache.pop(session_id)
 
-    def get_session_by_username(self, username: str):
+    def get_session_by_username(self, username: str) -> AsyncSession:
         # 通过username获取online的session，如果不存在，则返回None
         for session_id in list(self.online_user_data_cache.keys()):
             if self.online_user_data_cache.get(session_id).get('data').get('username') == username:
                 return self.online_user_data_cache.get(session_id).get("session")
 
-    def get_session_by_session_id(self, session_id):
+    def get_session_by_session_id(self, session_id) -> AsyncSession:
         # 通过session id获取session
         return self.online_user_data_cache.get(session_id).get('session')
 
@@ -89,7 +89,7 @@ class CacheService(object):
         if not self.get_user_cache(userdata.get('username')):
             self.m_db_svc.insert_userdata(userdata)
 
-    def get_user_cache(self, username: str):
+    def get_user_cache(self, username: str) -> dict:
         # 通过username获取userdata，如果cache中不存在，就从数据库拉取
         userdata = self.user_data_cache.get('username')
         if userdata:
@@ -103,7 +103,6 @@ class CacheService(object):
             else:
                 # 如果数据库没有数据
                 log(0, f"当前数据库没有该玩家{username}的数据")
-                return None
 
     def remove_user_cache(self, username: str):
         if not username:
@@ -115,12 +114,6 @@ class CacheService(object):
             self.user_data_cache.pop(username)
         else:
             log(1, f"{username} 玩家数据缓存不存在")
-        # if username in list(self.user_data_cache.keys()):
-        #     # 移除user data的缓存数据'''
-        #     log(0, f"{username} remove and cache delete!")
-        #     self.user_data_cache.pop(username)
-        # else:
-        #     log(1, f"{username} 玩家数据缓存不存在")
 
     def update(self):
         # tick每隔3min自动存一次数据'''

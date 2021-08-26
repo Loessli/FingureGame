@@ -19,25 +19,36 @@ class LoginService(object):
         log(0, f"{username}登陆请求{login_data}")
         password = login_data.get("password")
         cache_user_data = self.m_cache.get_user_cache(username)
-        if not cache_user_data:
-            # 新账号
+        if not cache_user_data:  # 新账号
             log(0, f"{username}注册成功，准备登陆")
             user_data = {"username": username, "password": password}
             self.m_cache.add_online_user_cache_by_id(session_id, cache_user_data)
             self.m_cache.add_user_cache(user_data)
             self.login_response(True, session_id, "账号注册成功!并登陆")
-        else:
-            # 老帐号
-            if password == cache_user_data.get("password"):
+        else:  # 老帐号
+            if password == cache_user_data.get("password"):  # 密码正确
                 session = self.m_cache.get_session_by_username(username)
                 if session:
-                    # kick 老帐号
-                    self.m_cache.remove_online_user_cache(session)
-                    session.close()
+                    if session.id == session_id:
+                        if cache_user_data["username"] == username:
+                            # 同一账号登陆两次
+                            self.login_response(False, session_id, "already login")
+                        else:
+                            # 同一台机器，前后登陆两个不同的账号
+                            self.m_cache.remove_online_user_cache(session)
+                    else:
+                        self.m_cache.remove_online_user_cache(session)
+                        session.close()  # A先B后，B踢掉A，A close
                 self.login_response(True, session_id)  # 账号登陆成功
                 self.m_cache.add_online_user_cache_by_id(session_id, cache_user_data)
-            else:
+            else:  # 密码错误
                 self.login_response(False, session_id, "password error!")
+
+    def login_new_account(self, msg_pkt):
+        ...
+
+    def login_already_account(self):
+        ...
 
     def login_response(self, success: bool, session_id, error_msg=""):
         # 登陆消息返回

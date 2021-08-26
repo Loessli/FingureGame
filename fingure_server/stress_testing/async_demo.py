@@ -60,4 +60,6 @@ def processing2():
 
 
 if __name__ == '__main__':
-    asyncio.get_event_loop().create_connection()
+    ...
+    from stressing import main
+    print(main.User)

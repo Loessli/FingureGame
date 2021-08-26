@@ -2,6 +2,7 @@ from game_play.game_room import Room
 from lib.decorator_mode import *
 from lib.log_info import log
 from service.cache_service import CacheService
+from typing import (Dict)
 
 
 @singleton
@@ -9,9 +10,9 @@ class GameRoomService(object):
     # 房间id的缓存
     m_temp_id = 1
     # 房间缓存 key为id str类型，value为room
-    m_rooms = {}
+    m_rooms: Dict[str, Room] = {}
     # cache服务
-    m_cache = None
+    m_cache: CacheService = None
 
     def init(self):
         log(0, 'GameRoomService启动!')

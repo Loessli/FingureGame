@@ -1,5 +1,4 @@
 from lib.decorator_mode import *
-from lib.network import AsyncServer
 from lib.config import Config
 from .net_service import NetService
 from .login_service import LoginService
@@ -9,6 +8,7 @@ from .db_service import MysqlDBService
 from .heart_beat_service import HeartBeatService
 import gevent
 from gevent import monkey
+from game_play.net import Session, Server
 
 
 @singleton
@@ -33,8 +33,8 @@ class ServerRoot(object):
         self.m_net_service = NetService()
         self.m_db = MysqlDBService()
         gevent.spawn(self.updata)
-        self.m_server = AsyncServer()  # Server()
-        self.m_server.start_server(addr=(Config.server_ip, Config.server_port))
+        self.m_server = Server(Session)  # Server()
+        self.m_server.start_server(address=(Config.server_ip, Config.server_port), max_player=Config.max_players)
 
     def updata(self):
         while True:
