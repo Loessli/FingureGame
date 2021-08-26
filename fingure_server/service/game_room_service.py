@@ -1,7 +1,7 @@
 from game_play.game_room import Room
 from lib.decorator_mode import *
 from lib.log_info import log
-from service.cache_service import CacheService
+from .cache_service import CacheService
 from typing import (Dict)
 
 

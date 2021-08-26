@@ -82,8 +82,7 @@ class AsyncServer(object):
                 result = self.m_session_dict[client_conn].start_receive()
             if not result:
                 # 退出的时候，会发送一个消息，receive的时候是b""，这时候表示退出
-                if session:
-                    session.close()
+                session.close()
                 del self.m_session_dict[client_conn]
         except Exception as e:
             log_info.log(0, "client exist", e)

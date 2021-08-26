@@ -91,9 +91,19 @@ if __name__ == '__main__':
     client.send(login_msg)
     # client.receive()
     time.sleep(2)
-    client.send(login_msg)
-    time.sleep(2)
+    send_msg = {
+        'type': 2,
+        'data': {
+            'c_time': time.time(),
+            's_time': time.time()
+        }
+    }
+    client.send(send_msg)
+    time.sleep(10)
+    while client.m_data_queue.qsize() > 0:
+        print(client.m_data_queue.get())
     client.stop()
     # while True:
     #     ...
+    from multiprocessing.queues import Queue
 

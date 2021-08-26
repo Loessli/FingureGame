@@ -1,6 +1,6 @@
 from lib.log_info import log
 from lib.decorator_mode import *
-from service.cache_service import CacheService
+from .cache_service import CacheService
 from enum import IntEnum
 import time
 from typing import (Dict)
@@ -54,7 +54,6 @@ class HeartBeat(object):
         self.m_client_data = client_data
 
     def stop_heart_beat(self):
-        self.m_session.close()
         if self.green_let:
             self.green_let.kill()
 
@@ -64,7 +63,7 @@ class HeartBeatService(object):
     m_cache = None
     m_running = True
     heartbeat_delta = 5  # 5s一次发送心跳
-    m_heartbeat_cache: Dict[int, HeartBeat]  = {}
+    m_heartbeat_cache: Dict[int, HeartBeat] = {}
     temp_time = 0
     m_manager = None
 
@@ -85,14 +84,15 @@ class HeartBeatService(object):
         player_session_id = msg_pkt[0]
         player_data = msg_pkt[1]
         # 新进的player
-        if player_session_id not in self.m_heartbeat_cache:
+        if player_session_id not in list(self.m_heartbeat_cache.keys()):
             self.m_heartbeat_cache[player_session_id] = HeartBeat(player_session_id, player_data)
         else:
             self.m_heartbeat_cache[player_session_id].update_client_data(player_data)
 
     def player_remove(self, session_id):
         # 玩家离开
-        if self.m_heartbeat_cache.get(session_id):
+        if self.m_heartbeat_cache[session_id]:
+            print(session_id, 'stop???')
             self.m_heartbeat_cache[session_id].stop_heart_beat()
             self.m_heartbeat_cache.pop(session_id)
 

@@ -30,4 +30,8 @@ class RunnerManager(object):
             self.m_runners.append(temp_runner)
             multiprocessing.Process(target=temp_runner.start).start()
 
+    def stop(self):
+        for runner in self.m_runners:
+            runner.stop()
+
 

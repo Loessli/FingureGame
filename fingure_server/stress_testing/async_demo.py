@@ -59,7 +59,20 @@ def processing2():
         print('222222', time.time())
 
 
+class A(object):
+    def __init__(self, num: int):
+        self.num = num
+
+
+class B(object):
+    a: A = None
+
+    def __init__(self, _a):
+        self.a_class = _a
+
+    def start(self):
+        self.a = self.a_class(10)
+
+
 if __name__ == '__main__':
     ...
-    from stressing import main
-    print(main.User)

@@ -1,10 +1,10 @@
 from lib.decorator_mode import *
 from lib.log_info import log
 from lib.config import MsgType
-from service.login_service import LoginService
-from service.game_room_service import GameRoomService
-from service.cache_service import CacheService
-from service.heart_beat_service import HeartBeatService
+from .login_service import LoginService
+from .game_room_service import GameRoomService
+from .cache_service import CacheService
+from .heart_beat_service import HeartBeatService
 import gevent
 from gevent.queue import Queue
 
@@ -53,7 +53,7 @@ class NetService(object):
     def player_remove(self, session):
         # 玩家离开
         log(0, f'player {session.id} remove, 退出游戏')
-        self.m_heart_beat.player_remove(session)
+        self.m_heart_beat.player_remove(session.id)
         cache_data = self.m_cache.get_online_user_cache(session)
         if cache_data:
             self.m_cache.remove_online_user_cache(session)
