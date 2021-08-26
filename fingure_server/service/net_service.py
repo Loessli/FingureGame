@@ -1,12 +1,12 @@
 from lib.decorator_mode import *
 from lib.log_info import log
-from queue import Queue
 from lib.config import MsgType
 from service.login_service import LoginService
 from service.game_room_service import GameRoomService
 from service.cache_service import CacheService
 from service.heart_beat_service import HeartBeatService
 import gevent
+from gevent.queue import Queue
 
 
 @singleton
