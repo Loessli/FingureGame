@@ -5,7 +5,7 @@ class Config(object):
     server_ip = "10.1.55.77"
     server_port = 12457
     tick_frame = 0.032    # 30帧
-    max_players = 12  # 同时在线player数量
+    max_players = 3000  # 同时在线player数量
 
     # 数据库登陆设置
     db_host = "localhost"

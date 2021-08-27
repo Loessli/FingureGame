@@ -27,8 +27,8 @@ class NetService(object):
 
     def handle_msg(self, msg_pkt):
         '''
-        服务器收包处理
-        :param msg_pkt:(Session, Data)
+        server receive message handle
+        :param msg_pkt:(session_id, Data)
         '''
         receive_data = msg_pkt[1]
         log(0, "[ReceiveInfo]", receive_data)
@@ -47,12 +47,10 @@ class NetService(object):
             gevent.sleep(0)
 
     def player_add(self, session):
-        log(0, f"current session id is {session.get_id()}")
         self.m_cache.add_online_user_cache(session)
 
     def player_remove(self, session):
         # 玩家离开
-        log(0, f'player {session.id} remove, 退出游戏')
         self.m_heart_beat.player_remove(session.id)
         cache_data = self.m_cache.get_online_user_cache(session)
         if cache_data:

@@ -21,8 +21,7 @@ class AsyncSession(object):
             self.on_receive(body_info)
             self.start_receive()
         else:
-            return False
-        return True
+            raise Exception("client socket close by itself")
 
     def on_connect(self):
         pass
@@ -77,13 +76,7 @@ class AsyncServer(object):
                 session.on_connect()
                 self.session_id_change()
                 self.m_session_dict[client_conn] = session
-                result = session.start_receive()
-            else:
-                result = self.m_session_dict[client_conn].start_receive()
-            if not result:
-                # 退出的时候，会发送一个消息，receive的时候是b""，这时候表示退出
-                session.close()
-                del self.m_session_dict[client_conn]
+            session.start_receive()
         except Exception as e:
             log_info.log(0, "client exist", e)
             if session:

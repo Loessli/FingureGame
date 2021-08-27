@@ -7,6 +7,7 @@ class ClientTcp(object):
     def __init__(self):
         self._address = ("10.1.55.77", 12457)
         self.m_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.m_client.setblocking(False)
         self.m_client.connect(self._address)
         self.m_head_len = 4
         self.m_data_queue = queue.Queue()
@@ -21,6 +22,7 @@ class ClientTcp(object):
 
     def receive(self):
         head_data = self.m_client.recv(self.m_head_len)
+        print(head_data)
         if head_data == b"":
             return
         body_data = self.m_client.recv(ClientTcp.unpack(head_data))
@@ -89,8 +91,8 @@ if __name__ == '__main__':
 
     client = ClientTcp()
     client.send(login_msg)
-    # client.receive()
-    time.sleep(2)
+    client.receive()
+    # time.sleep(2)
     send_msg = {
         'type': 2,
         'data': {
@@ -99,10 +101,11 @@ if __name__ == '__main__':
         }
     }
     client.send(send_msg)
-    time.sleep(10)
-    while client.m_data_queue.qsize() > 0:
-        print(client.m_data_queue.get())
-    client.stop()
+    # client.stop()
+    # time.sleep(10)
+    # while client.m_data_queue.qsize() > 0:
+    #     print(client.m_data_queue.get())
+    # client.stop()
     # while True:
     #     ...
     from multiprocessing.queues import Queue

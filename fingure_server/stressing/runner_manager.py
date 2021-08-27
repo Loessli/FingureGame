@@ -20,7 +20,7 @@ class RunnerManager(object):
         if user_count_per_core == 0:
             user_count_per_core = 1
         # cpu有几个核创建几个进程
-        for per_core in range(self.core_count):
+        for per_core in range(1):  # self.core_count
             if per_core == 0:
                 user_count = user_count_per_core + left
             else:

@@ -82,7 +82,7 @@ if __name__ == '__main__':
     env = {
         "user_count": 1,
         "user_class": TempUser,
-        "run_time": 30,
+        "run_time": 10,
         "host": "10.1.55.77",
         "port": "12457"
     }

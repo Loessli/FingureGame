@@ -85,14 +85,13 @@ class HeartBeatService(object):
         player_data = msg_pkt[1]
         # 新进的player
         if player_session_id not in list(self.m_heartbeat_cache.keys()):
-            self.m_heartbeat_cache[player_session_id] = HeartBeat(player_session_id, player_data)
+            self.m_heartbeat_cache[player_session_id] = HeartBeat(player_session_id, player_data['data'])
         else:
-            self.m_heartbeat_cache[player_session_id].update_client_data(player_data)
+            self.m_heartbeat_cache[player_session_id].update_client_data(player_data['data'])
 
     def player_remove(self, session_id):
         # 玩家离开
-        if self.m_heartbeat_cache[session_id]:
-            print(session_id, 'stop???')
+        if session_id in list(self.m_heartbeat_cache.keys()):
             self.m_heartbeat_cache[session_id].stop_heart_beat()
             self.m_heartbeat_cache.pop(session_id)
 
