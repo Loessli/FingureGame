@@ -5,7 +5,9 @@ from .cache_service import CacheService
 
 @singleton
 class LoginService(object):
+
     m_cache = None
+    """cache service"""
 
     def init(self):
         log(0, 'LoginService启动!')
@@ -21,15 +23,17 @@ class LoginService(object):
         cache_user_data = self.m_cache.get_user_cache(username)
 
         if not cache_user_data:  # 新账号
-            log(0, f"{username}注册成功，准备登陆")
+            log(0, f"{username} login success")
             user_data = {"username": username, "password": password}
             self.m_cache.add_online_user_cache_by_id(session_id, cache_user_data)
             self.m_cache.add_user_cache(user_data)
             self.login_response(True, session_id, "account register success, login successful", username)
         else:  # 老帐号
             if password == cache_user_data.get("password"):  # 密码正确
-                session = self.m_cache.get_session_by_username(username)
-                if session:
+                if not self.m_cache.is_player_online(session_id):
+                    """ this is fast for judge player online"""
+                    session = self.m_cache.get_session_by_username(username)
+                    # 200 user的情况下，发现调用这个方法会有问题  感觉这个这个方法效率的问题
                     if session.id == session_id:
                         if cache_user_data["username"] == username:
                             # 同一账号登陆两次

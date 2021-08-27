@@ -18,7 +18,7 @@ class NetService(object):
     m_lock = None
 
     def init(self):
-        log(0, "NetService启动!")
+        log(0, "NetService launcher !")
         self.m_sessions = Queue()  # 消息队列
         self.m_login_srv = LoginService()
         self.m_cache = CacheService()
@@ -31,7 +31,7 @@ class NetService(object):
         :param msg_pkt:(session_id, Data)
         '''
         receive_data = msg_pkt[1]
-        log(0, "[ReceiveInfo]", receive_data)
+        log(0, "[ReceiveInfo]", msg_pkt[0], receive_data)
         if receive_data['type'] == MsgType.heart_beat:  # 心跳处理 2
             self.m_heart_beat.heart_beat_handle(msg_pkt)
         elif receive_data['type'] == MsgType.login:

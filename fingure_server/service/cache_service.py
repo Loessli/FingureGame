@@ -52,8 +52,7 @@ class CacheService(object):
     def add_online_user_cache(self, session):
         # 添加线上玩家的数据缓存
         log(0, f"当前添加的cache为{session}, id为 {session.get_id()}")
-        temp_data = {'session': session, 'data': {}}
-        self.online_user_data_cache.update({session.get_id(): temp_data})
+        self.online_user_data_cache[session.id] = {'session': session, 'data': {}}
 
     def add_online_user_cache_by_id(self, session_id, data):
         # 通过session_id添加数据
@@ -76,7 +75,7 @@ class CacheService(object):
     def get_session_by_username(self, username: str) -> AsyncSession:
         # 通过username获取online的session，如果不存在，则返回None
         for session_id in list(self.online_user_data_cache.keys()):
-            if self.online_user_data_cache.get(session_id).get('data').get('username') == username:
+            if self.online_user_data_cache.get[session_id]['data']['username'] == username:
                 return self.online_user_data_cache.get(session_id).get("session")
 
     def get_session_by_session_id(self, session_id) -> AsyncSession:
@@ -114,6 +113,9 @@ class CacheService(object):
             self.user_data_cache.pop(username)
         else:
             log(1, f"{username} 玩家数据缓存不存在")
+
+    def is_player_online(self, session_id):
+        return bool(self.online_user_data_cache[session_id])
 
     def update(self):
         # tick每隔3min自动存一次数据'''

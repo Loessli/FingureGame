@@ -3,10 +3,14 @@ import socket
 
 class User(object):
 
-    def __init__(self, _event_loop, host, port):
+    m_user_id: int = 0
+    """one and only for per user. from 0 to env.user_count -1"""
+
+    def __init__(self, _event_loop, user_id,  host, port):
         self.m_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.m_client.setblocking(False)
         self.m_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.m_user_id = user_id
 
         self.runner_loop = _event_loop
         self.address = (host, port)

@@ -11,3 +11,7 @@ class Magic(object):
 class RoundManager(object):
     pass
 
+
+if __name__ == '__main__':
+
+    print(bool(None))

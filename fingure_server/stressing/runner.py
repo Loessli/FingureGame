@@ -3,6 +3,7 @@ from typing import List
 from asyncio.events import AbstractEventLoop
 from asyncio import Task
 import asyncio
+from multiprocessing import Queue
 
 
 class Runner(object):
@@ -25,11 +26,12 @@ class Runner(object):
         assert issubclass(self.user_class, User)
         self.run_time = _env['run_time']
 
-    async def spawn_user(self):
+    async def spawn_user(self, user_ids: Queue):
         # spawn_user should wait some times, or else socket ConnectionResetError
         # --> https://blog.csdn.net/xunxue1523/article/details/104662965
         while self.user_count > 0:
-            client = self.user_class(self.runner_loop, self.env["host"], self.env["port"])
+            user_id = user_ids.get()
+            client = self.user_class(self.runner_loop, user_id, self.env["host"], self.env["port"])
             self.m_clients.append(client)
             task = client.run()
             self.m_tasks.append(task)
@@ -61,9 +63,9 @@ class Runner(object):
         await asyncio.sleep(self.run_time)
         self.stop()
 
-    def start(self):
+    def start(self, user_ids: Queue):
         self.runner_loop = asyncio.new_event_loop()
-        spawn_task = self.spawn_user()
+        spawn_task = self.spawn_user(user_ids)
         try:
             self.runner_loop.create_task(spawn_task)
             self.runner_loop.run_until_complete(self.limit())

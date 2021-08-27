@@ -23,15 +23,15 @@ for i in range(100):
 
 class TempUser(User):
 
-    def __init__(self, _event_loop, host, port):
-        super().__init__(_event_loop, host, port)
+    def __init__(self, _event_loop, user_id,  host, port):
+        super().__init__(_event_loop, user_id, host, port)
 
     async def start(self):
-        _id = random.randint(0, 100)
+        print(self.m_user_id)
         login_msg = {
             'type': 0,
             'data': {
-                'username': 'lealli' + str(_id),
+                'username': 'lealli' + str(self.m_user_id),
                 'password': 'z1314123',
                 "room_id": 0,
                 "play_state": 0,
@@ -41,7 +41,7 @@ class TempUser(User):
         }
         await self.send(self.encode(login_msg))
         login_data = await self.receive()
-        print(_id, 'login result', login_data)
+        print(self.m_user_id, 'login result', login_data)
         await self.heart_beat()
 
     async def heart_beat(self):
@@ -55,7 +55,7 @@ class TempUser(User):
         }
         await self.send(self.encode(send_msg))
         receive = await self.receive()
-        print('heart msg', receive)
+        print(self.m_user_id, 'heart msg', receive)
         await self.heart_beat()
 
     def encode(self, data: dict) -> bytes:
@@ -80,9 +80,9 @@ class TempUser(User):
 
 if __name__ == '__main__':
     env = {
-        "user_count": 1,
+        "user_count": 400,
         "user_class": TempUser,
-        "run_time": 10,
+        "run_time": 30,
         "host": "10.1.55.77",
         "port": "12457"
     }

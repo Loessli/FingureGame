@@ -40,7 +40,6 @@ class HeartBeat(object):
             self.m_client_data = {
                 'c_time': int(time.time()),
             }
-        log(0, 'start send heartbeat')
         msg = {
             'type': 2,
             'data': {

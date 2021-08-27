@@ -80,8 +80,8 @@ if __name__ == '__main__':
     login_msg={
         "type": 0,
         "data": {
-            "username": "123",
-            "password": "123456",
+            "username": "lealli126",
+            "password": "z1314123",
             "room_id": 0,
             "play_state": 0,
             "play_order": 0,
