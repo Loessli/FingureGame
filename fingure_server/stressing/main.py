@@ -4,8 +4,8 @@ import asyncio
 import time
 import struct
 import json
-from multiprocessing import Queue
-import random
+from asyncio import Task
+
 
 _env_example: dict = {
     "user_count": None,
@@ -16,18 +16,16 @@ _env_example: dict = {
 }
 
 
-queue_id = Queue()
-for i in range(100):
-    queue_id.put(i)
-
-
 class TempUser(User):
+    m_hear_beat_task: Task = None
 
     def __init__(self, _event_loop, user_id,  host, port):
         super().__init__(_event_loop, user_id, host, port)
 
+    def __del__(self):
+        del self.m_hear_beat_task
+
     async def start(self):
-        print(self.m_user_id)
         login_msg = {
             'type': 0,
             'data': {
@@ -42,6 +40,8 @@ class TempUser(User):
         await self.send(self.encode(login_msg))
         login_data = await self.receive()
         print(self.m_user_id, 'login result', login_data)
+        # self.m_hear_beat_task = self.heart_beat()
+        # self.runner_loop.create_task(self.m_hear_beat_task)
         await self.heart_beat()
 
     async def heart_beat(self):
@@ -80,9 +80,9 @@ class TempUser(User):
 
 if __name__ == '__main__':
     env = {
-        "user_count": 400,
+        "user_count": 10,
         "user_class": TempUser,
-        "run_time": 30,
+        "run_time": 10,
         "host": "10.1.55.77",
         "port": "12457"
     }
