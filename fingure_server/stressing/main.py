@@ -40,8 +40,6 @@ class TempUser(User):
         await self.send(self.encode(login_msg))
         login_data = await self.receive()
         print(self.m_user_id, 'login result', login_data)
-        # self.m_hear_beat_task = self.heart_beat()
-        # self.runner_loop.create_task(self.m_hear_beat_task)
         await self.heart_beat()
 
     async def heart_beat(self):

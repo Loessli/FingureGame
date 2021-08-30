@@ -74,18 +74,12 @@ def decode(msg: bytes):
         print('??????????')
 
 
-class Behavior(TaskSet):
-    @task
-    def task_temp(self):
-        ...
-
-
 USER_ID_LIST = list(range(500))
 
 
 class TcpTestUser(User):
-    host: str = "10.1.55.77"  # 连接的TCP服务的IP
-    port: int = 12456  # 连接的TCP服务的端口
+    host: str = "127.0.0.1"  # 连接的TCP服务的IP
+    port: int = 12457  # 连接的TCP服务的端口
     # must be task_set
     tasks = []
     heart_beat_green_let: gevent.Greenlet = None
@@ -94,7 +88,7 @@ class TcpTestUser(User):
     def __init__(self, env):
         super().__init__(env)
         self.client = TcpSocketClient()
-        # self.client.connect((self.host, self.port))
+        self.client.connect((self.host, self.port))
         self.duration = 150
         self.start_time = time.time()
         self.m_id = USER_ID_LIST.pop(0)
@@ -112,6 +106,19 @@ class TcpTestUser(User):
 
     def on_start(self):
         print('user on start', self.m_id)
+        login_msg = {
+            'type': 0,
+            'data': {
+                'username': 'lealli' + str(self.m_id),
+                'password': 'z1314123',
+                "room_id": 0,
+                "play_state": 0,
+                "play_order": 0,
+                "leave_room": False
+            }
+        }
+        self.client.send_msg(encode(login_msg))
+        print('login result', decode(self.client.receive_msg(1024)))
 
     def stop(self, force=False):
         print('user stop', self.m_id)
@@ -125,21 +132,18 @@ class TcpTestUser(User):
     def heart_beat(self):
         while time.time() - self.start_time <= self.duration:
             print(id(self), time.time(), 'heart_beat', self.m_id)
-            # msg = {
-            #     "type": 2,
-            #     "data": {
-            #         "c_time": 123456,
-            #         "s_time": 23456
-            #     }
-            # }
-            # self.client.send_msg(encode(msg))  # 发送的数据
-            # data = self.client.receive_msg(2048)
-            # if data:
-            #     print(decode(data))
             gevent.sleep(2)
 
     def tick(self):
-        ...
+        send_msg = {
+            'type': 2,
+            'data': {
+                'c_time': time.time(),
+                's_time': time.time()
+            }
+        }
+        self.client.send_msg(encode(send_msg))
+        print('heart beat result', decode(self.client.receive_msg(1024)))
 
 
 if __name__ == "__main__":

@@ -12,14 +12,14 @@ class StressConfig(object):
     out_report_path = os.path.dirname(__file__) + "\\test_report\\" + str(time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                            time.localtime(time.time())))
     # 指定并发用户数
-    total_users = 2
+    total_users = 5
     # 每秒启动用户数
     per_second_user = 1
     # 指定运行时间 单位s
     running_time = 100
 
     # 是否启动web模式
-    is_web = True
+    is_web = False
     # web ip
     web_ip = "127.0.0.1"
     # web port
